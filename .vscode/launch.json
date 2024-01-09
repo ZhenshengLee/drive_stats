@@ -1,0 +1,42 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "client-py",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "."
+                }
+            ],
+            "justMyCode": true
+        },
+        {
+            "name": "run-py-file",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "externalTerminal",
+            "sudo": true,
+            "justMyCode": true
+        },
+        {
+            "name": "run-py-module-core",
+            "type": "python",
+            "request": "launch",
+            "module": "jtop.core.${fileBasenameNoExtension}",
+            "justMyCode": true,
+            "console": "externalTerminal",
+            "sudo": true,
+            "autoReload": {
+                "enable": true
+            }
+        }
+    ]
+}

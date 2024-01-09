@@ -24,5 +24,8 @@ jtop_test.*
 *.csv
 .dccache
 
-.vscode/
+# .vscode/
 .venv*/
+
+# sync temp files
+_gsdata_/
