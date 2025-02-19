@@ -24,6 +24,11 @@ from ..gui.lib.chart import Chart
 from ..gui import JTOPGUI, ALL, GPU, CPU, MEM, ENGINE, CTRL, INFO
 
 
+@pytest.fixture
+def reset_chart():
+    Chart.reset_color_counter()
+
+
 def openGUI(stdscr, jetson):
     # Initialization Menu
     pages = [ALL]
@@ -37,16 +42,17 @@ def openGUI(stdscr, jetson):
     return pages
 
 
-def test_openGUI(setup_jtop_server):
+def test_openGUI(setup_jtop_server, reset_chart):
     # Load command line controller
     stdscr = curses.initscr()
     # Initialize colors
     curses.start_color()
-    # Reset counter charts
-    Chart.COLOR_COUNTER = 0
     # Run jtop
     with jtop() as jetson:
         if jetson.ok():
+            # Reset counter charts
+            Chart.reset_color_counter()
+            assert Chart.COLOR_COUNTER == 0
             # Open JTOPGUI
             pages = openGUI(stdscr, jetson)
             # Start with selected page

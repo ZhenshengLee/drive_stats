@@ -81,6 +81,10 @@ class Chart(object):
         # Attach the chart for every update from jtop
         jetson.attach(self.update)
 
+    @classmethod
+    def reset_color_counter(cls):
+        cls.COLOR_COUNTER = 0
+
     def __del__(self):
         # Remove from color counter
         Chart.COLOR_COUNTER -= len(self._combinations) + 1

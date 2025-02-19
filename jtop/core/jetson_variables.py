@@ -42,8 +42,15 @@ if not sys.warnoptions:
 # https://developer.nvidia.com/embedded/jetpack-archive
 NVIDIA_JETPACK = {
     # -------- JP6 --------
+    "36.4.3": "6.2",
+    "36.4.2": "6.1 (rev1)",
+    "36.4.0": "6.1",
+    "36.3.0": "6.0",
     "36.2.0": "6.0 DP",
+    "36.0.0": "6.0 EA",
     # -------- JP5 --------
+    "35.6.0": "5.1.4",
+    "35.5.0": "5.1.3",
     "35.4.1": "5.1.2",
     "35.3.1": "5.1.1",
     "35.3.0": "5.1.1 PRE",
@@ -53,6 +60,8 @@ NVIDIA_JETPACK = {
     "34.1.0": "5.0 DP",
     "34.0.1": "5.0 PRE-DP",
     # -------- JP4 --------
+    "32.7.6": "4.6.6",
+    "32.7.5": "4.6.5",
     "32.7.4": "4.6.4",
     "32.7.3": "4.6.3",
     "32.7.2": "4.6.2",
@@ -177,7 +186,7 @@ def read_i2c_raw_data(bus, registry, size_block):
     return string_data
 
 
-def get_raw_output():
+def get_jetson_raw_output():
     raw_output = {}
     # Catch all output from all files
     for file in RAW_FILES:

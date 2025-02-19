@@ -17,6 +17,7 @@
 
 import os
 import re
+import subprocess
 from .common import cat
 from .command import Command
 # Fix connection refused for python 2.7
@@ -26,7 +27,7 @@ except NameError:
     FileNotFoundError = IOError
 
 
-MODULES = ['cuDNN', 'TensorRT', 'VPI']  # 'Visionworks'
+MODULES = ['cuDNN', 'TensorRT.', 'VPI']  # 'Visionworks'
 CUDA_FILE_RE = re.compile(r'CUDA Version (.*)')
 CUDA_NVCC_RE = re.compile(r'V([0-9]+.[0-9]+.[0-9]+)')
 
@@ -40,6 +41,17 @@ def get_cuda():
             cuda_version = match.group(1)
     elif os.path.isfile("/usr/local/cuda/bin/nvcc"):
         cmd = Command(['/usr/local/cuda/bin/nvcc', '--version'])
+        try:
+            lines = cmd()
+            for line in lines:
+                match = re.search(CUDA_NVCC_RE, line)
+                if match:
+                    cuda_version = match.group(1)
+                    break
+        except (OSError, Command.CommandException):
+            pass
+    elif subprocess.call(["which", "nvcc"], stdout=subprocess.DEVNULL) == 0:
+        cmd = Command(['nvcc', '--version'])
         try:
             lines = cmd()
             for line in lines:
@@ -100,11 +112,16 @@ def get_libraries():
     # Find all modules
     modules = get_all_modules()
     for name in MODULES:
-        os_variables[name] = ''
+        # Fix TensorRT search #462
+        name_dict = name[:-1] if name.endswith('.') else name
+        os_variables[name_dict] = ''
         # Find version if installed
         for module, version in modules.items():
+            if name.endswith('.') and name.lower()[:-1] == module:
+                os_variables[name_dict] = version.split('-')[0]
+                break
             if name.lower() in module:
-                os_variables[name] = version.split('-')[0]
+                os_variables[name_dict] = version.split('-')[0]
                 break
     # Get Vulkan output
     cmd_vulkaninfo = Command(['which', 'vulkaninfo'])

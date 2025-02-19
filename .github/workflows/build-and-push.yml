@@ -11,9 +11,40 @@ env:
 # https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions
 
 jobs:
+  auto_style:
+    name: Auto style code
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Install autopep8
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 autopep8
+      - name: Auto style code with autopep8
+        run: autopep8 --in-place --aggressive --aggressive --recursive . --max-line-length 180
+      - name: Check for changes
+        run: |
+          if [[ `git status --porcelain` ]]; then
+            echo "There are changes after auto-styling the code."
+            git config --global user.name "github-actions[bot]"
+            git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git add .
+            git commit -m "Auto style code with autopep8"
+            git push
+          else
+            echo "No changes detected."
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
   build:
     name: Test on python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    needs: [auto_style]
     strategy:
       # max-parallel: 1
       matrix:
@@ -73,13 +104,13 @@ jobs:
           !startsWith(github.ref, 'refs/heads/feature/') &&
           !contains(github.ref, '.dev') &&
           !contains(github.ref, 'rc')
-        uses: docker/login-action@v3.0.0
+        uses: docker/login-action@v3.3.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push
         id: docker_build
-        uses: docker/build-push-action@v5.1.0
+        uses: docker/build-push-action@v6.13.0
         with:
           push: |
             ${{ github.actor != 'dependabot[bot]' &&
@@ -106,7 +137,7 @@ jobs:
         run: |
           # Upgrade pip
           # https://github.com/actions/setup-python/issues/225
-          sudo -H env "PATH=$PATH" python -m pip install --upgrade pip
+          # sudo -H env "PATH=$PATH" python -m pip install --upgrade pip --break-system-packages
           # Install jtop
           sudo -H env "PATH=$PATH" pip install -v -e .
           # Install sphinx requirements
@@ -138,7 +169,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Docker Hub Description # https://github.com/peter-evans/dockerhub-description
-        uses: peter-evans/dockerhub-description@v3
+        uses: peter-evans/dockerhub-description@v4
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
@@ -159,7 +190,7 @@ jobs:
           python-version: "3.x"
       - name: Install dependencies
         run: |
-          sudo -H python -m pip install --upgrade pip
+          # sudo -H python -m pip install --upgrade pip
           sudo -H pip install setuptools wheel twine
       - name: Build and publish
         env:
